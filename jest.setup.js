@@ -19,8 +19,8 @@ jest.setTimeout(10000)
 
 //
 // Silence the warning: Animated: `useNativeDriver` is not supported
-//
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}))
+// This mock is no longer necessary in modern versions of React Native.
+// The NativeAnimatedHelper module has been removed.
 
 //
 // react-native-reanimated (v2+) mock
@@ -73,8 +73,8 @@ jest.mock('react-native-gesture-handler', () => {
 // expo-file-system
 jest.mock('expo-file-system', () => {
   return {
-    documentDirectory: 'file://mocked-docs/',
-    cacheDirectory: 'file://mocked-cache/',
+    documentDirectory: 'file:///mocked-docs/',
+    cacheDirectory: 'file:///mocked-cache/',
     getInfoAsync: jest.fn(async (uri) => ({ exists: false, uri })),
     makeDirectoryAsync: jest.fn(async (path) => ({ path })),
     copyAsync: jest.fn(async ({ from, to }) => ({ from, to, uri: to })),
