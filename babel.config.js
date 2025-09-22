@@ -1,6 +1,4 @@
 module.exports = function (api) {
-  api.cache(true)
-
   return {
     // Use the Expo preset which is compatible with React Native & jest-expo environments.
     // If you prefer the metro preset, replace 'babel-preset-expo' with 'module:metro-react-native-babel-preset'.
