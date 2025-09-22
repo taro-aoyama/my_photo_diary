@@ -16,7 +16,15 @@
  * - The wrapper keeps a module-level DB instance (singleton).
  */
 
-import * as SQLite from "expo-sqlite";
+import { Platform } from "react-native";
+/**
+ * NOTE:
+ * Do not statically import `expo-sqlite` at top-level because the web bundler may try to
+ * resolve `wa-sqlite.wasm` (used by expo-sqlite's web build). Instead, load `expo-sqlite`
+ * lazily inside `openDB()` via `require` so that the module is only resolved on native
+ * environments. For web, provide a lightweight shim that produces a clear error.
+ */
+let SQLite: any | null = null;
 import { MIGRATIONS, LATEST_MIGRATION_VERSION } from "./schema";
 
 const DB_NAME = "my_photo_diary.db";
@@ -28,11 +36,54 @@ let db: any | null = null;
 
 /**
  * Open (or return existing) DB handle.
+ *
+ * Lazy-load `expo-sqlite` to avoid bundling web-specific WASM artifacts when running on web.
+ * On native (iOS/Android) we `require('expo-sqlite')` at runtime. On web, provide a thin
+ * shim that exposes a `transaction` function which immediately calls the error callback
+ * with a helpful message. This prevents Metro from trying to statically resolve
+ * web-only WASM assets during bundling.
  */
 export function openDB() {
   if (!db) {
-    db = SQLite.openDatabase(DB_NAME);
+    // If we already have a runtime SQLite binding, use it.
+    if (SQLite) {
+      db = SQLite.openDatabase(DB_NAME);
+      return db;
+    }
+
+    // Detect React Native / native runtime.
+    const isNative =
+      typeof Platform !== "undefined" && Platform.OS && Platform.OS !== "web";
+
+    if (isNative) {
+      // Use require to avoid static import at module-evaluation time.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+      const ExpoSQLite = require("expo-sqlite");
+      SQLite = ExpoSQLite;
+      db = SQLite.openDatabase(DB_NAME);
+      return db;
+    }
+
+    // Web or unknown environment: provide a minimal shim that surfaces a clear error
+    // when attempted to be used. This avoids bundlers trying to include WASM assets.
+    db = {
+      transaction: (fn: any, errorCallback?: any, successCallback?: any) => {
+        const err = new Error(
+          "expo-sqlite is not available in the current (web) environment. " +
+            "Run this flow on a native device/simulator or configure a web-compatible SQLite build (wa-sqlite) in your bundler.",
+        );
+        if (typeof errorCallback === "function") {
+          errorCallback(err);
+        } else {
+          // If no error callback provided, throw to surface problem during development.
+          throw err;
+        }
+      },
+    } as any;
+
+    return db;
   }
+
   return db;
 }
 

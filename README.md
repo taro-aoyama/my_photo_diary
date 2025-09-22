@@ -130,8 +130,39 @@ npx expo install expo-router
 
 実行
 
+# 依存インストール（初回）
+corepack enable
+corepack prepare pnpm@latest --activate
+pnpm install --frozen-lockfile
+
+# 開発サーバ起動
 pnpm start
-# iOS: i, Android: a, Web: w
+# Expo DevTools が開きます — iOS: i, Android: a, Web: w
+# 実機: Expo Go で QR をスキャン
+
+# DB とメディアの簡易動作確認（dev screen）
+- `lib/db/example_usage.ts` の `exampleFlow()` を呼ぶ dev スクリーンを使うと簡単に確認できます（リポジトリに `app/(tabs)/dev.tsx` があればボタンで実行可能）。
+- もしくは Metro/Expo のコンソールで `exampleFlow` や `bootstrap` のログ（テーブル作成確認）を確認してください。
+
+# よくあるトラブルと対処
+- `pnpm: command not found` の場合：
+  - corepack を有効化して pnpm を使えるようにする：
+    ```
+    corepack enable
+    corepack prepare pnpm@latest --activate
+    pnpm -v
+    ```
+  - それでも動かない場合は `npm i -g pnpm` を試す（ローカル環境の方針に合わせてください）。
+- `ERR_PNPM_NO_PKG_MANIFEST` の場合：
+  - `package.json` がプロジェクトルートに存在することを確認してください（このリポジトリでは `package.json` を追加済み）。
+- expo-sqlite でテーブルが見つからない／スキーマが古い場合：
+  - シミュレータ上でアプリデータを消去して再インストールするか、`initDatabase()` を呼ぶ dev スクリーンを使ってマイグレーションを再実行してください。
+
+# 補足（便利コマンド）
+- 型チェック: `pnpm type-check`
+- Lint: `pnpm lint`
+- テスト: `pnpm test`（テストが追加されている場合）
+
 
 
 ⸻
