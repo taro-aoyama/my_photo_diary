@@ -107,6 +107,6 @@ export const MIGRATIONS: string[][] = [
   //   `ALTER TABLE photos ADD COLUMN color_profile TEXT;`,
   //   `UPDATE schema_version ...`
   // ]
-];
+]
 
-export const LATEST_MIGRATION_VERSION = MIGRATIONS.length;
+export const LATEST_MIGRATION_VERSION = MIGRATIONS.length

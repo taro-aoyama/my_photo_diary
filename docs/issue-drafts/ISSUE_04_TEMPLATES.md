@@ -1,4 +1,5 @@
 # ISSUE_04_TEMPLATES.md
+
 このファイルは、Issue / PR / コミット規約のテンプレート集です。
 プロジェクトにそのまま貼り付けられる形で、GitHub に登録する際の候補をまとめています。
 テンプレートは必要に応じて `.github/ISSUE_TEMPLATE/` や `.github/PULL_REQUEST_TEMPLATE.md` に配置してください。
@@ -6,12 +7,15 @@
 ---
 
 ## 1) Issue テンプレート（一般）
+
 タイトル例:
+
 ```
 [カテゴリ] <短い概要>
 ```
 
 本文テンプレート:
+
 ```
 ### 概要
 （何をするか、なぜ必要かを簡潔に）
@@ -39,12 +43,15 @@
 ---
 
 ## 2) バグ報告テンプレート
+
 タイトル例:
+
 ```
 [bug] <短い概要>
 ```
 
 本文テンプレート:
+
 ```
 ### 再現手順
 1. (例) アプリを起動する
@@ -73,7 +80,9 @@
 ---
 
 ## 3) PR テンプレート（.github/PULL_REQUEST_TEMPLATE.md）
+
 ファイルにそのまま置けるテンプレート:
+
 ```
 ## チケット / Issue
 - 関連 Issue: #<番号> (もしあれば)
@@ -100,7 +109,9 @@ PR チェックリストは CI と連携させると効果的です（required c
 ---
 
 ## 4) コミットメッセージ規約（Conventional Commits を推奨）
+
 短いルール:
+
 - フォーマット: `<type>(scope?): <short summary>`
 - 代表的な `type`: feat, fix, docs, style, refactor, perf, test, chore
 - 例:
@@ -109,18 +120,23 @@ PR チェックリストは CI と連携させると効果的です（required c
   - `docs: update README start instructions`
 
 運用:
+
 - 1コミット = 1変更の単位。大きな変更は複数のコミットに分ける。
 - コミット本文には 72 文字区切りで詳細を記載する（必要な場合）。
 
 ---
 
 ## 5) commit-msg 検証（optional）
+
 Commitlint を導入する例（プロジェクトに導入する場合の案内）:
+
 - パッケージ: `@commitlint/config-conventional`, `@commitlint/cli`, `husky`
 - `commitlint.config.js` 例:
+
 ```
 module.exports = { extends: ['@commitlint/config-conventional'] };
 ```
+
 - Husky の `commit-msg` hook で commitlint を実行する: `npx husky add .husky/commit-msg 'npx --no -- commitlint --edit "$1"'`
 
 （実際の導入は別 Issue で行うことを推奨）
@@ -128,6 +144,7 @@ module.exports = { extends: ['@commitlint/config-conventional'] };
 ---
 
 ## 6) .github ディレクトリ配置提案
+
 - `.github/ISSUE_TEMPLATE/bug_report.md`
 - `.github/ISSUE_TEMPLATE/feature_request.md`
 - `.github/PULL_REQUEST_TEMPLATE.md`
@@ -137,6 +154,7 @@ module.exports = { extends: ['@commitlint/config-conventional'] };
 ---
 
 ## 7) CONTRIBUTING.md の最小項目サンプル
+
 ```
 # Contributing to my_photo_diary
 
@@ -152,6 +170,7 @@ Thanks for your interest! Please follow these guidelines:
 ---
 
 ## 8) 使い方（手順）
+
 1. 上記のテンプレートを `.github/` 下に配置する（Issue テンプレは `ISSUE_TEMPLATE` フォルダへ）。
 2. `CONTRIBUTING.md` をリポジトリルートに置き、README にリンクを追加。
 3. （任意）Husky + commitlint を導入する場合は別 Issue を作って実装する。

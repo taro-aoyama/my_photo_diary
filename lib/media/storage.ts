@@ -10,7 +10,7 @@
  * - This file does not call any network APIs. It only reads/writes local files.
  */
 
-import * as FileSystem from "expo-file-system";
+const FileSystem = require("expo-file-system");
 import * as ImageManipulator from "expo-image-manipulator";
 
 export type SaveImageResult = {
