@@ -17,9 +17,9 @@ module.exports = function (api) {
         },
       ],
 
-      // react-native-reanimated plugin must be listed last (per library docs)
-      // It enables the babel transforms reanimated needs to work correctly in both runtime and tests.
-      'react-native-reanimated/plugin',
+      // react-native-reanimated plugin has been moved to react-native-worklets
+      // It must be listed last (per library docs)
+      'react-native-worklets/plugin',
     ],
 
     // Keep source maps enabled in dev/test environments
