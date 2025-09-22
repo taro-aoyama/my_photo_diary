@@ -3,6 +3,20 @@
 
 学習目的で React Native + Expo を使って iOS / Android / Web のクロスプラットフォーム写真日記アプリを作る計画です。最初はスタンドアローン（端末内完結）で実装し、のちに Supabase（または Rails API）を用いたバックエンド連携へ拡張します。
 
+## Getting Started
+
+1.  **Install dependencies:**
+    ```bash
+    corepack enable
+    corepack prepare pnpm@latest --activate
+    pnpm install --frozen-lockfile
+    ```
+
+2.  **Start the development server:**
+    ```bash
+    pnpm start
+    ```
+
 ⸻
 
 目的 / ビジョン
