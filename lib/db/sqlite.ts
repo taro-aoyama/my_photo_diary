@@ -16,7 +16,7 @@
  * - The wrapper keeps a module-level DB instance (singleton).
  */
 
-import { Platform } from "react-native";
+import { Platform } from 'react-native'
 /**
  * NOTE:
  * Do not statically import `expo-sqlite` at top-level because the web bundler may try to
@@ -24,15 +24,15 @@ import { Platform } from "react-native";
  * lazily inside `openDB()` via `require` so that the module is only resolved on native
  * environments. For web, provide a lightweight shim that produces a clear error.
  */
-let SQLite: any | null = null;
-import { MIGRATIONS, LATEST_MIGRATION_VERSION } from "./schema";
+let SQLite: any | null = null
+import { MIGRATIONS, LATEST_MIGRATION_VERSION } from './schema'
 
-const DB_NAME = "my_photo_diary.db";
+const DB_NAME = 'my_photo_diary.db'
 
-type ExecResult = any;
-type SQLParams = any[] | undefined;
+type ExecResult = any
+type SQLParams = any[] | undefined
 
-let db: any | null = null;
+let db: any | null = null
 
 /**
  * Open (or return existing) DB handle.
@@ -47,21 +47,21 @@ export function openDB() {
   if (!db) {
     // If we already have a runtime SQLite binding, use it.
     if (SQLite) {
-      db = SQLite.openDatabase(DB_NAME);
-      return db;
+      db = SQLite.openDatabase(DB_NAME)
+      return db
     }
 
     // Detect React Native / native runtime.
     const isNative =
-      typeof Platform !== "undefined" && Platform.OS && Platform.OS !== "web";
+      typeof Platform !== 'undefined' && Platform.OS && Platform.OS !== 'web'
 
     if (isNative) {
       // Use require to avoid static import at module-evaluation time.
       // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-      const ExpoSQLite = require("expo-sqlite");
-      SQLite = ExpoSQLite;
-      db = SQLite.openDatabase(DB_NAME);
-      return db;
+      const ExpoSQLite = require('expo-sqlite')
+      SQLite = ExpoSQLite
+      db = SQLite.openDatabase(DB_NAME)
+      return db
     }
 
     // Web or unknown environment: provide a minimal shim that surfaces a clear error
@@ -69,22 +69,22 @@ export function openDB() {
     db = {
       transaction: (fn: any, errorCallback?: any, successCallback?: any) => {
         const err = new Error(
-          "expo-sqlite is not available in the current (web) environment. " +
-            "Run this flow on a native device/simulator or configure a web-compatible SQLite build (wa-sqlite) in your bundler.",
-        );
-        if (typeof errorCallback === "function") {
-          errorCallback(err);
+          'expo-sqlite is not available in the current (web) environment. ' +
+            'Run this flow on a native device/simulator or configure a web-compatible SQLite build (wa-sqlite) in your bundler.'
+        )
+        if (typeof errorCallback === 'function') {
+          errorCallback(err)
         } else {
           // If no error callback provided, throw to surface problem during development.
-          throw err;
+          throw err
         }
       },
-    } as any;
+    } as any
 
-    return db;
+    return db
   }
 
-  return db;
+  return db
 }
 
 /**
@@ -92,7 +92,7 @@ export function openDB() {
  * This uses a transactional wrapper for each statement to keep semantics simpler.
  */
 export function exec(sql: string, params: SQLParams = []): Promise<ExecResult> {
-  const database = openDB();
+  const database = openDB()
   return new Promise((resolve, reject) => {
     database.transaction(
       (tx: any) => {
@@ -102,23 +102,23 @@ export function exec(sql: string, params: SQLParams = []): Promise<ExecResult> {
           (_tx: any, result: ExecResult) => resolve(result),
           (_tx: any, error: any) => {
             // return true to roll back? expo-sqlite expects false/true semantics; we reject instead.
-            reject(error);
-            return false;
-          },
-        );
+            reject(error)
+            return false
+          }
+        )
       },
       (txError: any) => {
-        reject(txError);
-      },
-    );
-  });
+        reject(txError)
+      }
+    )
+  })
 }
 
 /**
  * Run a statement without expecting rows (convenience).
  */
 export async function run(sql: string, params: SQLParams = []): Promise<void> {
-  await exec(sql, params);
+  await exec(sql, params)
 }
 
 /**
@@ -126,9 +126,9 @@ export async function run(sql: string, params: SQLParams = []): Promise<void> {
  */
 export function all<T = any>(
   sql: string,
-  params: SQLParams = [],
+  params: SQLParams = []
 ): Promise<T[]> {
-  const database = openDB();
+  const database = openDB()
   return new Promise((resolve, reject) => {
     database.transaction(
       (tx: any) => {
@@ -137,20 +137,20 @@ export function all<T = any>(
           params,
           (_tx: any, result: any) => {
             // expo-sqlite: result.rows._array contains rows
-            const rows = result?.rows?._array ?? [];
-            resolve(rows);
+            const rows = result?.rows?._array ?? []
+            resolve(rows)
           },
           (_tx: any, error: any) => {
-            reject(error);
-            return false;
-          },
-        );
+            reject(error)
+            return false
+          }
+        )
       },
       (txError: any) => {
-        reject(txError);
-      },
-    );
-  });
+        reject(txError)
+      }
+    )
+  })
 }
 
 /**
@@ -158,10 +158,10 @@ export function all<T = any>(
  */
 export async function get<T = any>(
   sql: string,
-  params: SQLParams = [],
+  params: SQLParams = []
 ): Promise<T | null> {
-  const rows = await all<T>(sql, params);
-  return rows.length > 0 ? rows[0] : null;
+  const rows = await all<T>(sql, params)
+  return rows.length > 0 ? rows[0] : null
 }
 
 /**
@@ -169,9 +169,9 @@ export async function get<T = any>(
  * The statements param is an array of [sql, params].
  */
 export function transaction(
-  statements: Array<[string, SQLParams?]>,
+  statements: Array<[string, SQLParams?]>
 ): Promise<void> {
-  const database = openDB();
+  const database = openDB()
   return new Promise((resolve, reject) => {
     database.transaction(
       (tx: any) => {
@@ -179,40 +179,40 @@ export function transaction(
         const runNext = (i: number) => {
           if (i >= statements.length) {
             // all done
-            return;
+            return
           }
-          const [sql, params] = statements[i];
+          const [sql, params] = statements[i]
           tx.executeSql(
             sql,
             params ?? [],
             () => {
-              runNext(i + 1);
+              runNext(i + 1)
             },
             (_tx: any, error: any) => {
               // abort transaction by throwing an exception
               // expo-sqlite will call the error callback of the transaction
               // Returning false indicates error to expo-sqlite (per its API)
-              reject(error);
-              return false;
-            },
-          );
-        };
+              reject(error)
+              return false
+            }
+          )
+        }
 
         try {
-          runNext(0);
+          runNext(0)
         } catch (e) {
-          reject(e);
+          reject(e)
         }
       },
       (txError: any) => {
-        reject(txError);
+        reject(txError)
       },
       () => {
         // success callback: only called after transaction completes successfully
-        resolve();
-      },
-    );
-  });
+        resolve()
+      }
+    )
+  })
 }
 
 /**
@@ -223,16 +223,16 @@ async function getCurrentMigrationVersion(): Promise<number> {
   try {
     // If schema_version doesn't exist, this SELECT will fail; catch and return 0.
     const row = await get<{ version: number }>(
-      "SELECT MAX(version) as version FROM schema_version",
-      [],
-    );
+      'SELECT MAX(version) as version FROM schema_version',
+      []
+    )
     if (!row || row.version === null || row.version === undefined) {
-      return 0;
+      return 0
     }
-    return Number(row.version) || 0;
+    return Number(row.version) || 0
   } catch (err) {
     // Likely schema_version table does not exist yet.
-    return 0;
+    return 0
   }
 }
 
@@ -241,41 +241,43 @@ async function getCurrentMigrationVersion(): Promise<number> {
  * Each migration is an array of SQL statements to execute in order.
  */
 export async function migrate(): Promise<void> {
-  openDB();
+  openDB()
   // Ensure foreign_keys is enabled (optional; may be ignored on some platforms)
   try {
-    await exec("PRAGMA foreign_keys = ON;");
+    await exec('PRAGMA foreign_keys = ON;')
   } catch {
     // non-fatal
   }
 
-  const current = await getCurrentMigrationVersion();
+  const current = await getCurrentMigrationVersion()
   if (current >= LATEST_MIGRATION_VERSION) {
-    return;
+    return
   }
 
   for (let v = current + 1; v <= LATEST_MIGRATION_VERSION; v++) {
-    const migrationIndex = v - 1;
-    const statements = MIGRATIONS[migrationIndex] ?? [];
+    const migrationIndex = v - 1
+    const statements = MIGRATIONS[migrationIndex] ?? []
     // Run all statements for this migration inside a single transaction
     const stmts: Array<[string, SQLParams?]> = statements.map((s: string) => [
       s,
       [],
-    ]);
+    ])
     try {
-      await transaction(stmts);
-      const appliedAt = new Date().toISOString();
+      await transaction(stmts)
+      const appliedAt = new Date().toISOString()
       // schema_version table might have been created by this migration, so insert now
       // Use exec to run a single insert
       await exec(
-        "INSERT INTO schema_version (version, applied_at) VALUES (?, ?);",
-        [v, appliedAt],
-      );
+        'INSERT INTO schema_version (version, applied_at) VALUES (?, ?);',
+        [v, appliedAt]
+      )
     } catch (err) {
       // If migration fails, throw with context
       throw new Error(
-        `Migration v${v} failed: ${(err && err.message) || String(err)}`,
-      );
+        `Migration v${v} failed: ${
+          (err && (err as Error).message) || String(err)
+        }`
+      )
     }
   }
 }
@@ -284,8 +286,8 @@ export async function migrate(): Promise<void> {
  * Initialize DB: open, migrate.
  */
 export async function initDatabase(): Promise<void> {
-  openDB();
-  await migrate();
+  openDB()
+  await migrate()
 }
 
 /**
@@ -293,10 +295,10 @@ export async function initDatabase(): Promise<void> {
  */
 export async function tableExists(tableName: string): Promise<boolean> {
   const row = await get<{ count: number }>(
-    "SELECT COUNT(*) as count FROM sqlite_master WHERE type = ? AND name = ?;",
-    ["table", tableName],
-  );
-  return !!(row && row.count > 0);
+    'SELECT COUNT(*) as count FROM sqlite_master WHERE type = ? AND name = ?;',
+    ['table', tableName]
+  )
+  return !!(row && row.count > 0)
 }
 
 /**
@@ -312,4 +314,4 @@ export default {
   migrate,
   initDatabase,
   tableExists,
-};
+}

@@ -1,6 +1,7 @@
 # [infra] Tooling: TypeScript / ESLint / Prettier / EditorConfig
 
 ## 概要
+
 開発を安定させ、品質を担保するための基盤ツール群を導入します。主な目的は以下です。
 
 - TypeScript を strict モードで有効にして型安全性を高める
@@ -14,6 +15,7 @@
 ---
 
 ## 目的
+
 - ローカル開発と CI の両方で一貫した型チェック / Lint / 整形が走るようにする
 - PR レビュー時の雑務（フォーマットの差分など）を削減する
 - 初期段階から厳しめのルール（strict, recommended rules）で安全に開発を進める
@@ -21,6 +23,7 @@
 ---
 
 ## 受け入れ条件 (Acceptance Criteria)
+
 - [ ] `tsconfig.json` がプロジェクトルートに存在し、`strict: true` が設定されている
 - [ ] ESLint 設定ファイル（`.eslintrc.js` / `.eslintrc.json` 等）が存在し、TypeScript と React/React Native 向けの基本ルールを導入している
 - [ ] Prettier 設定（`.prettierrc` または `prettier.config.js`）が存在し、エディタ用の設定（タブ幅、セミコロン等）が明記されている
@@ -35,6 +38,7 @@
 ---
 
 ## 実装ノート / 推奨パッケージ
+
 - TypeScript
   - `typescript`
   - `@types/react`, `@types/react-native`（必要に応じて）
@@ -56,12 +60,14 @@
   - Husky + commitlint（Conventional Commits 検証） は別 Issue（ISSUE_04_TEMPLATES / コミット規約）で扱うことを推奨
 
 サンプル `tsconfig.json` の必須候補設定（実装時に参照）
+
 - `"strict": true`
 - `"noEmit": true`（type-check スクリプト用）
 - `"jsx": "react-native"`（react-native / expo-web を意識）
 - `"skipLibCheck": true`（初期は有効でも可）
 
 サンプル ESLint の方針
+
 - TypeScript + React + React Native のベース設定
 - Prettier と共存させる（`extends: ['plugin:@typescript-eslint/recommended', 'plugin:react/recommended', 'prettier']` など）
 - 可能であればルールセットは緩め→厳しめの順で段階的に強化する（初期は警告レベルを多めにして開発速度を担保）
@@ -69,6 +75,7 @@
 ---
 
 ## 手順（推奨）
+
 1. `pnpm add -D typescript eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-plugin-react eslint-plugin-react-hooks eslint-config-prettier`
 2. ルートに `tsconfig.json` を追加（`strict: true` を有効にする）
 3. ルートに `.eslintrc.js`（または json）を追加し基本構成を記述
@@ -81,6 +88,7 @@
 ---
 
 ## レビューチェックリスト（PR）
+
 - [ ] `tsconfig.json` に `strict: true` が設定されている
 - [ ] `lint` / `type-check` を実行して致命的なエラーがない
 - [ ] Prettier 設定が ESLint と競合していない（`eslint-config-prettier` が含まれている）
@@ -90,22 +98,26 @@
 ---
 
 ## 見積もり
+
 - small（0.5〜2 日）。既存のテンプレートを流用すれば短時間で設定可能。
 
 ---
 
 ## 依存
+
 - ISSUE_01_PROJECT_BOOTSTRAP（Project bootstrap が完了していることを前提）
 - ISSUE_03_CI（CI に組み込む場合は CI Issue と連携）
 
 ---
 
 ## ラベル / マイルストーン
+
 - Labels: `infra`, `quality`, `priority:high`
 - Milestone: `M0`
 
 ---
 
 ## 備考
+
 - 初期段階はルールをあまりにも厳しくしない（開発のフローを阻害しない）ことも重要です。重大な問題（セキュリティ、型エラー等）は即座に修正し、スタイル周りは段階的に厳格化する方針を採ると良いです。
 - `Husky`（コミットフック）や `lint-staged`（変更ファイルのみ整形）は別 Issue（ISSUE_04_TEMPLATES の一部）で導入することを推奨します。もし必要であれば、この Issue に追記してください。

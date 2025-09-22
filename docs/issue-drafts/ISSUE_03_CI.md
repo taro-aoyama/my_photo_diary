@@ -1,9 +1,11 @@
 # [ci] GitHub Actions: Lint / Typecheck / Tests
 
 ## 概要
+
 Pull Request と main ブランチへの push に対して自動的に静的解析（ESLint）、型チェック（TypeScript）、ユニットテスト（Jest）、および簡易ビルド検証（必要に応じて）を実行する CI ワークフローを追加します。これによりコード品質を維持し、PR マージ前に致命的な問題を検出できるようにします。
 
 ## 受け入れ条件 (Acceptance Criteria)
+
 - [ ] `.github/workflows/ci.yml`（または同等のファイル）がリポジトリに追加されている。
 - [ ] PR 作成時に該当ワークフローがトリガーされ、`lint` / `type-check` / `test` が実行される。
 - [ ] `pnpm` を使用する想定で、依存キャッシュ（pnpm store/cache）を利用する設定が含まれている。
@@ -11,6 +13,7 @@ Pull Request と main ブランチへの push に対して自動的に静的解�
 - [ ] ワークフロー実行ログからコマンドの実行結果が確認できる（成功/失敗の明示）。
 
 ## 実装ノート / 推奨方針
+
 - ワークフローは以下のジョブを含める：
   - `lint`: ESLint を走らせる（`pnpm lint`）
   - `type-check`: TypeScript の型チェック（`pnpm type-check` -> `tsc --noEmit`）
@@ -23,6 +26,7 @@ Pull Request と main ブランチへの push に対して自動的に静的解�
 - CI は早期に導入し、PR マージ条件に組み込む（Protect branch の設定で required checks を指定）。
 
 ## 推奨ワークフロー（例）
+
 以下はサンプルの GitHub Actions ワークフローです。プロジェクトルートに `.github/workflows/ci.yml` として追加してください。
 
 ```/dev/null/example_ci.yml#L1-200
@@ -126,21 +130,25 @@ jobs:
 （上記はテンプレなので、実際のスクリプト名やオプション（--ci など）はプロジェクトの jest 設定に合わせて調整してください）
 
 ## 追加オプション（検討）
+
 - Lint の自動修正を PR にコミットするワークフロー（ただし自動コミットはチームポリシーに依存）。
 - プルリクのサイズ・変更内容に応じた分割実行（例: フロントエンドのみであれば軽量ジョブ）。
 - モノレポ/ワークスペース対応：ワークフローを monorepo に対応させる場合、対象パッケージごとのジョブ分割を検討。
 - E2E（Detox / Maestro）ジョブは別ワークフローで管理し、専用ランナーやデバイスが必要になるため別途計画する。
 
 ## 実装手順（推奨）
+
 1. プロジェクトルートに `.github/workflows/ci.yml` を追加して PR を作成する。
 2. PR を作成し、ワークフローがトリガーされることを確認する（Intentional failing state を使ってワークフローが動くかテスト）。
 3. `required checks` を GitHub ブランチ保護設定で有効にする（例: `lint`, `type-check`, `test` を必須に設定）。
 4. 実行ログを確認し、必要に応じてジョブやスクリプトを調整する。
 
 ## 見積もり
+
 - small（0.5〜2 日）：既存のテンプレートに沿って設定する場合は短時間で導入可能。テストの安定化やキャッシュ最適化に追加時間を見積もる。
 
 ## 依存
+
 - ISSUE_01_PROJECT_BOOTSTRAP（プロジェクトの土台ができていること）
 - ISSUE_02_TOOLING（`lint` / `type-check` / `test` スクリプトが package.json に追加されていること）
 

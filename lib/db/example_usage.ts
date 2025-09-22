@@ -19,27 +19,27 @@
  * Note: For production, prefer a robust UUID library or crypto-backed implementation.
  */
 function uuidv4(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     // eslint-disable-next-line no-bitwise
-    const r = (Math.random() * 16) | 0;
+    const r = (Math.random() * 16) | 0
     // eslint-disable-next-line no-bitwise
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }
-import { initDatabase, run, all, get } from "./sqlite";
-import { saveImage, deleteImage } from "../media/storage";
+import { initDatabase, run, all, get } from './sqlite'
+import { saveImage, deleteImage } from '../media/storage'
 
 async function createAlbum(name: string) {
-  const id = uuidv4();
-  const now = new Date().toISOString();
+  const id = uuidv4()
+  const now = new Date().toISOString()
 
   await run(
     `INSERT INTO albums (id, name, created_at, updated_at, sync_status) VALUES (?, ?, ?, ?, ?);`,
-    [id, name, now, now, "pending"],
-  );
+    [id, name, now, now, 'pending']
+  )
 
-  return id;
+  return id
 }
 
 async function addPhotoRecord({
@@ -49,13 +49,13 @@ async function addPhotoRecord({
   thumbnailUri,
   takenAt,
 }: {
-  id: string;
-  albumId?: string | null;
-  fileUri: string;
-  thumbnailUri?: string | null;
-  takenAt?: string | null;
+  id: string
+  albumId?: string | null
+  fileUri: string
+  thumbnailUri?: string | null
+  takenAt?: string | null
 }) {
-  const now = new Date().toISOString();
+  const now = new Date().toISOString()
   await run(
     `INSERT INTO photos (id, album_id, file_uri, thumbnail_uri, taken_at, created_at, updated_at, sync_status)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
@@ -67,9 +67,9 @@ async function addPhotoRecord({
       takenAt ?? null,
       now,
       now,
-      "pending",
-    ],
-  );
+      'pending',
+    ]
+  )
 }
 
 /**
@@ -80,10 +80,10 @@ async function listPhotosForAlbum(albumId?: string | null) {
     albumId
       ? `SELECT id, file_uri, thumbnail_uri, taken_at, created_at FROM photos WHERE album_id = ? AND deleted_at IS NULL ORDER BY created_at DESC;`
       : `SELECT id, file_uri, thumbnail_uri, taken_at, created_at FROM photos WHERE deleted_at IS NULL ORDER BY created_at DESC;`,
-    albumId ? [albumId] : [],
-  );
-  console.log("Photos:", rows);
-  return rows;
+    albumId ? [albumId] : []
+  )
+  console.log('Photos:', rows)
+  return rows
 }
 
 /**
@@ -99,72 +99,72 @@ async function listPhotosForAlbum(albumId?: string | null) {
 export async function exampleFlow(sampleSourceUri?: string) {
   try {
     // 1) Init DB
-    await initDatabase();
-    console.log("Database initialized");
+    await initDatabase()
+    console.log('Database initialized')
 
     // 2) Create Album
-    const albumId = await createAlbum("My Test Album");
-    console.log("Created album:", albumId);
+    const albumId = await createAlbum('My Test Album')
+    console.log('Created album:', albumId)
 
     // 3) Save image to app storage
     // If sampleSourceUri is omitted, we skip actual file operations and insert a placeholder URI.
     let saved: {
-      id: string;
-      fileUri: string;
-      thumbnailUri?: string | null;
-    } | null = null;
+      id: string
+      fileUri: string
+      thumbnailUri?: string | null
+    } | null = null
     if (sampleSourceUri) {
       try {
         saved = await saveImage(sampleSourceUri, {
           generateThumbnail: true,
           thumbnailMaxSize: 400,
-        });
-        console.log("Saved image to app storage:", saved);
+        })
+        console.log('Saved image to app storage:', saved)
       } catch (err) {
-        console.warn("Image save failed, falling back to placeholder URI", err);
+        console.warn('Image save failed, falling back to placeholder URI', err)
         saved = {
           id: uuidv4(),
           fileUri: sampleSourceUri,
           thumbnailUri: null,
-        };
+        }
       }
     } else {
       // placeholder
-      const placeholderUri = `file:///placeholder/${uuidv4()}.jpg`;
-      saved = { id: uuidv4(), fileUri: placeholderUri, thumbnailUri: null };
-      console.log("Using placeholder image URI:", placeholderUri);
+      const placeholderUri = `file:///placeholder/${uuidv4()}.jpg`
+      saved = { id: uuidv4(), fileUri: placeholderUri, thumbnailUri: null }
+      console.log('Using placeholder image URI:', placeholderUri)
     }
 
     // 4) Insert photo record referencing saved.fileUri
-    const photoId = uuidv4();
+    const photoId = uuidv4()
     await addPhotoRecord({
       id: photoId,
       albumId,
       fileUri: saved.fileUri,
       thumbnailUri: saved.thumbnailUri ?? null,
       takenAt: new Date().toISOString(),
-    });
-    console.log("Inserted photo record:", photoId);
+    })
+    console.log('Inserted photo record:', photoId)
 
     // 5) Query photos for the album
-    const photos = await listPhotosForAlbum(albumId);
-    console.log(`Found ${photos.length} photos for album ${albumId}`);
+    const photos = await listPhotosForAlbum(albumId)
+    console.log(`Found ${photos.length} photos for album ${albumId}`)
 
     // Example cleanup: delete saved image files if we created them
     // (In real app you might not delete immediately)
     if (sampleSourceUri && saved) {
       try {
-        await deleteImage(saved.fileUri, saved.thumbnailUri ?? undefined);
-        console.log("Deleted saved files (example cleanup)");
+        await deleteImage(saved.fileUri, saved.thumbnailUri ?? undefined)
+        console.log('Deleted saved files (example cleanup)')
       } catch (err) {
-        console.warn("Failed to delete saved files during cleanup", err);
+        console.warn('Failed to delete saved files during cleanup', err)
       }
     }
 
-    return { albumId, photoId, photos };
+    return { albumId, photoId, photos }
   } catch (err) {
-    console.error("exampleFlow failed:", err);
-    throw err;
+    console.error('exampleFlow failed:', err)
+    throw err
   }
 }
 
