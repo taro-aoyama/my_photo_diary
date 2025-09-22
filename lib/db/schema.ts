@@ -98,8 +98,8 @@ export const MIGRATIONS: string[][] = [
     `CREATE INDEX IF NOT EXISTS idx_photos_created_at ON photos(created_at);`,
     `CREATE INDEX IF NOT EXISTS idx_labels_name ON labels(name);`,
     `CREATE INDEX IF NOT EXISTS idx_notes_photo_id ON notes(photo_id);`,
-    `CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);`
-  ]
+    `CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);`,
+  ],
 
   // Future migrations can be appended here as additional arrays, e.g.:
   // ,

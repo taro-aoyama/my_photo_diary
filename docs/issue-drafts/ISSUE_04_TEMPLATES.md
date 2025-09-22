@@ -152,9 +152,9 @@ Thanks for your interest! Please follow these guidelines:
 ---
 
 ## 8) 使い方（手順）
-1. 上記のテンプレートを `.github/` 下に配置する（Issue テンプレは `ISSUE_TEMPLATE` フォルダへ）。  
-2. `CONTRIBUTING.md` をリポジトリルートに置き、README にリンクを追加。  
-3. （任意）Husky + commitlint を導入する場合は別 Issue を作って実装する。  
+1. 上記のテンプレートを `.github/` 下に配置する（Issue テンプレは `ISSUE_TEMPLATE` フォルダへ）。
+2. `CONTRIBUTING.md` をリポジトリルートに置き、README にリンクを追加。
+3. （任意）Husky + commitlint を導入する場合は別 Issue を作って実装する。
 4. GitHub のブランチ保護設定で必要な CI チェックを `required` に設定する。
 
 ---

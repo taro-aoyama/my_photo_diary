@@ -305,7 +305,7 @@ export interface EventModel extends BaseModel {
 12. 次のステップ（短期）
 - `lib/db/schema.ts` に上記 SQL を実装して DB 初期化ロジックを作成（Issue: DB schema & initialization）。
 - `lib/db/sqlite.ts` に Promise ベースのラッパーとマイグレーション実行を作る。
-- 画像保存ユーティリティ（`lib/media/storage.ts`）を実装し、サムネイル生成（`expo-image-manipulator` を利用）を組み込む。  
+- 画像保存ユーティリティ（`lib/media/storage.ts`）を実装し、サムネイル生成（`expo-image-manipulator` を利用）を組み込む。
 - Camera/Picker の PoC を作り、`photo save flow` の E2E を確認する。
 
 ---

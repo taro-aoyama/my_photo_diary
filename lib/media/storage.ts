@@ -10,8 +10,8 @@
  * - This file does not call any network APIs. It only reads/writes local files.
  */
 
-import * as FileSystem from 'expo-file-system';
-import * as ImageManipulator from 'expo-image-manipulator';
+import * as FileSystem from "expo-file-system";
+import * as ImageManipulator from "expo-image-manipulator";
 
 export type SaveImageResult = {
   id: string;
@@ -29,11 +29,11 @@ const THUMBS_DIR = `${PHOTOS_DIR}thumbnails/`;
  */
 function uuidv4(): string {
   // NOTE: crypto.getRandomValues would be preferable. This simple impl is ok for filenames.
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     // eslint-disable-next-line no-bitwise
     const r = (Math.random() * 16) | 0;
     // eslint-disable-next-line no-bitwise
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -66,16 +66,16 @@ async function ensureDirectoriesExist(): Promise<void> {
  */
 function extractExtension(uri: string): string {
   try {
-    const fragments = uri.split('?')[0].split('#')[0].split('.');
-    if (fragments.length <= 1) return 'jpg';
+    const fragments = uri.split("?")[0].split("#")[0].split(".");
+    if (fragments.length <= 1) return "jpg";
     const ext = fragments[fragments.length - 1].toLowerCase();
     // sanitize
     if (ext.length > 0 && ext.length <= 5) {
       return ext;
     }
-    return 'jpg';
+    return "jpg";
   } catch {
-    return 'jpg';
+    return "jpg";
   }
 }
 
@@ -114,7 +114,7 @@ export async function saveImage(
     generateThumbnail?: boolean;
     thumbnailMaxSize?: number;
     quality?: number;
-  }
+  },
 ): Promise<SaveImageResult> {
   const generateThumbnail = options?.generateThumbnail ?? true;
   const thumbnailMaxSize = options?.thumbnailMaxSize ?? 200;
@@ -142,8 +142,8 @@ export async function saveImage(
       // Return a helpful error message.
       throw new Error(
         `Failed to copy/move image to app storage. from=${sourceUri}, to=${dest}. ${String(
-          (err && (err as any).message) || err
-        )}`
+          (err && (err as any).message) || err,
+        )}`,
       );
     }
   }
@@ -164,7 +164,7 @@ export async function saveImage(
           compress: quality,
           format: ImageManipulator.SaveFormat.JPEG,
           base64: false,
-        }
+        },
       );
 
       // manipulateAsync may write to a temporary file path (manipResult.uri).
@@ -191,7 +191,7 @@ export async function saveImage(
     } catch (thumbErr) {
       // Thumbnail generation failed — don't block the save; just log and continue.
       // eslint-disable-next-line no-console
-      console.warn('Thumbnail generation failed:', thumbErr);
+      console.warn("Thumbnail generation failed:", thumbErr);
       thumbnailUri = null;
     }
   }
@@ -201,7 +201,9 @@ export async function saveImage(
   let width: number | null = null;
   let height: number | null = null;
   try {
-    const info = await ImageManipulator.manipulateAsync(finalUri, [], { base64: false });
+    const info = await ImageManipulator.manipulateAsync(finalUri, [], {
+      base64: false,
+    });
     if (info && (info as any).width && (info as any).height) {
       width = (info as any).width;
       height = (info as any).height;
@@ -226,7 +228,10 @@ export async function saveImage(
  *
  * Returns an object describing deletion outcomes.
  */
-export async function deleteImage(photoUri: string, thumbnailUri?: string | null): Promise<{
+export async function deleteImage(
+  photoUri: string,
+  thumbnailUri?: string | null,
+): Promise<{
   photoDeleted: boolean;
   thumbnailDeleted?: boolean;
 }> {
@@ -241,7 +246,7 @@ export async function deleteImage(photoUri: string, thumbnailUri?: string | null
   } catch (err) {
     // If deletion fails, log and continue
     // eslint-disable-next-line no-console
-    console.warn('Failed to delete photo file:', photoUri, err);
+    console.warn("Failed to delete photo file:", photoUri, err);
     photoDeleted = false;
   }
 
@@ -251,7 +256,7 @@ export async function deleteImage(photoUri: string, thumbnailUri?: string | null
       thumbnailDeleted = true;
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.warn('Failed to delete thumbnail file:', thumbnailUri, err);
+      console.warn("Failed to delete thumbnail file:", thumbnailUri, err);
       thumbnailDeleted = false;
     }
   }
@@ -265,7 +270,7 @@ export async function deleteImage(photoUri: string, thumbnailUri?: string | null
  */
 export async function generateThumbnailFromUri(
   sourceUri: string,
-  options?: { maxSize?: number; quality?: number }
+  options?: { maxSize?: number; quality?: number },
 ): Promise<string> {
   const maxSize = options?.maxSize ?? 200;
   const quality = options?.quality ?? 0.9;
@@ -284,7 +289,7 @@ export async function generateThumbnailFromUri(
         compress: quality,
         format: ImageManipulator.SaveFormat.JPEG,
         base64: false,
-      }
+      },
     );
 
     try {
@@ -306,7 +311,9 @@ export async function generateThumbnailFromUri(
       }
     }
   } catch (err) {
-    throw new Error(`Thumbnail generation failed for ${sourceUri}: ${String(err)}`);
+    throw new Error(
+      `Thumbnail generation failed for ${sourceUri}: ${String(err)}`,
+    );
   }
 }
 

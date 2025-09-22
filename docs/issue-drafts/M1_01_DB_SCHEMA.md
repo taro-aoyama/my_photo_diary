@@ -145,17 +145,17 @@ Title:
 ---
 
 ## 実施フロー（推奨）
-1. `DB schema & initialization` を完了して DB レイヤの雛形を作る。  
-2. 並行して `File storage utilities` を実装（保存・削除・サムネイル）。  
-3. `Camera & Image Picker integration` を実装し、保存 API と繋ぐ。  
-4. `Photo save flow` を組み上げ、E2E 的に保存→一覧が動くことを確認する。  
+1. `DB schema & initialization` を完了して DB レイヤの雛形を作る。
+2. 並行して `File storage utilities` を実装（保存・削除・サムネイル）。
+3. `Camera & Image Picker integration` を実装し、保存 API と繋ぐ。
+4. `Photo save flow` を組み上げ、E2E 的に保存→一覧が動くことを確認する。
 
 並列作業が可能な部分は分割して着手してください（例: UI 側と DB 側で担当を分ける等）。各 Issue は 1〜3 日で完了する粒度を目標に、必要ならさらに細分化してください。
 
 ---
 
 ## 次のアクション（私が行うこと）
-- これらの草案をあなたが GitHub Issues に貼ったら、Issue 番号を教えてください。  
-- あなたが許可すれば、`lib/db/schema.ts` の CREATE TABLE 実装雛形と `lib/db/sqlite.ts` の Promise ラッパーを作成します（作成後に単体テストの骨格も追加します）。  
+- これらの草案をあなたが GitHub Issues に貼ったら、Issue 番号を教えてください。
+- あなたが許可すれば、`lib/db/schema.ts` の CREATE TABLE 実装雛形と `lib/db/sqlite.ts` の Promise ラッパーを作成します（作成後に単体テストの骨格も追加します）。
 
 必要な修正や追加したい受け入れ条件があれば教えてください（優先度や見積もりを調整します）。

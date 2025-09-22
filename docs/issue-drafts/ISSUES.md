@@ -193,15 +193,15 @@
 ---
 
 ## 次のアクション提案（私が行えること）
-1. 上記の Issue をそのまま Markdown として出力します（このファイルはその出力の一つです）。  
-2. あなたの指示があれば、`docs/architecture.md` の完全な雛形（より詳細なスキーマ例、CREATE TABLE 文の雛形、sync メタ例）を作成してここに追加します。  
+1. 上記の Issue をそのまま Markdown として出力します（このファイルはその出力の一つです）。
+2. あなたの指示があれば、`docs/architecture.md` の完全な雛形（より詳細なスキーマ例、CREATE TABLE 文の雛形、sync メタ例）を作成してここに追加します。
 3. GitHub に直接 Issue を作成する場合は、あなたの権限（トークン or repository 認可）が必要です。私は手元で Issue を直接作れないので、Markdown を提供してあなたが貼り付ける形を推奨します。
 
 ---
 
 もしこのまま進めるなら、次にどれを出力しましょうか？
-- A: `docs/architecture.md` の詳細版（CREATE TABLE 文、フィールド説明、syncStatus 列の enum）を作る  
-- B: 上の Issue を個別 Markdown ファイルとして分割して出力する（例: `ISSUE_01_PROJECT_INIT.md` など）  
+- A: `docs/architecture.md` の詳細版（CREATE TABLE 文、フィールド説明、syncStatus 列の enum）を作る
+- B: 上の Issue を個別 Markdown ファイルとして分割して出力する（例: `ISSUE_01_PROJECT_INIT.md` など）
 - C: GitHub に貼る用のまとめ Markdown（コピーして一括で貼れるテンプレ）を出力する
 
 どれを希望しますか？また、Issue をそのまま貼る際に優先して作りたいものがあれば教えてください（例: 最初は M0 の 1〜4 を一括で）。
