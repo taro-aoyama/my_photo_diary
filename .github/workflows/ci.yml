@@ -7,42 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  setup:
-    name: Setup
-    runs-on: ubuntu-latest
-    outputs:
-      node-version: ${{ steps.node-version.outputs.node-version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        id: node-version
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
-      - name: Cache pnpm store
-        id: pnpm-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-  lint:
-    name: Lint
-    needs: setup
+  ci:
+    name: Lint, Typecheck, Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -54,91 +20,21 @@ jobs:
           node-version: 18
           cache: 'pnpm'
 
-      - name: Enable corepack
+      - name: Install dependencies
         run: |
           corepack enable
           corepack prepare pnpm@latest --activate
-
-      - name: Restore pnpm store cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          pnpm install --frozen-lockfile
 
       - name: Run ESLint
         run: pnpm lint
         env:
           CI: true
 
-  type-check:
-    name: Type Check
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
-      - name: Restore pnpm store cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Run TypeScript type check
         run: pnpm type-check
         env:
           CI: true
-
-  tests:
-    name: Tests
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'pnpm'
-
-      - name: Enable corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
-
-      - name: Restore pnpm store cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Run tests
         run: pnpm test -- --ci --reporters=default
