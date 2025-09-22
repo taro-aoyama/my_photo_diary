@@ -4,6 +4,7 @@
 初期実装は Expo (Managed workflow) + TypeScript + expo-sqlite を前提とします。
 
 目次
+
 1. 方針サマリ
 2. 同期メタと ID 方針
 3. SQL スキーマ（CREATE TABLE 文）
@@ -20,6 +21,7 @@
 ---
 
 1. 方針サマリ
+
 - SQLite (`expo-sqlite`) を Single Source of Truth（正本）として採用します。
 - 画像の実体（バイナリ）は `expo-file-system` に保存し、DB にはファイル URI とメタデータを保持します。
 - 各レコードに同期に必要なメタ（UUID、remote_id、created_at、updated_at、deleted_at、sync_status）を持たせて、将来のクラウド同期に備えます。
@@ -28,6 +30,7 @@
 ---
 
 2. 同期メタと ID 方針
+
 - `id`: ローカルで生成する UUID v4（文字列）。全テーブルの主キー。
 - `remote_id`: クラウド側で付与される ID（ある場合）。`NULL` を許容。
 - `created_at`, `updated_at`: ISO 8601 文字列（UTC）。タイムスタンプは常に UTC を使う。
@@ -35,6 +38,7 @@
 - `sync_status`: 同期状態の簡易 enum（文字列）。初期値は `'pending'`。
 
 推奨 `sync_status` 候補:
+
 - `'synced'` — ローカルの変更がクラウドに反映済み
 - `'pending'` — ローカルで変更あり、まだクラウドへアップロードされていない
 - `'conflict'` — クラウドとの競合が検出された（UI での解決を要する）
@@ -42,15 +46,17 @@
 - `'deleted'` — ソフトデリート済み（クラウドに削除通知が必要）
 
 設計メモ:
+
 - `updated_at` を競合解決（Last-Write-Wins 等）やマージ判定のために必須で更新する。
 - 変更があった際は `sync_status` を `'pending'` にセットする。
 
 ---
 
 3. SQL スキーマ（CREATE TABLE 文の雛形）
-以下は `lib/db/schema.ts` に置くことを想定した SQL 雛形です。初期化時に一括で実行します。
+   以下は `lib/db/schema.ts` に置くことを想定した SQL 雛形です。初期化時に一括で実行します。
 
 - schema_version テーブル（マイグレーション管理）
+
 ```sql
 CREATE TABLE IF NOT EXISTS schema_version (
   version INTEGER PRIMARY KEY,
@@ -59,6 +65,7 @@ CREATE TABLE IF NOT EXISTS schema_version (
 ```
 
 - albums テーブル
+
 ```sql
 CREATE TABLE IF NOT EXISTS albums (
   id TEXT PRIMARY KEY,               -- UUID v4
@@ -73,6 +80,7 @@ CREATE TABLE IF NOT EXISTS albums (
 ```
 
 - photos テーブル
+
 ```sql
 CREATE TABLE IF NOT EXISTS photos (
   id TEXT PRIMARY KEY,               -- UUID v4
@@ -94,6 +102,7 @@ CREATE TABLE IF NOT EXISTS photos (
 ```
 
 - labels テーブル（ラベル／タグ／タイトル候補）
+
 ```sql
 CREATE TABLE IF NOT EXISTS labels (
   id TEXT PRIMARY KEY,
@@ -108,6 +117,7 @@ CREATE TABLE IF NOT EXISTS labels (
 ```
 
 - photo_labels テーブル（多対多）
+
 ```sql
 CREATE TABLE IF NOT EXISTS photo_labels (
   photo_id TEXT NOT NULL,
@@ -117,6 +127,7 @@ CREATE TABLE IF NOT EXISTS photo_labels (
 ```
 
 - notes テーブル（写真に対する日記メモ）
+
 ```sql
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
@@ -131,6 +142,7 @@ CREATE TABLE IF NOT EXISTS notes (
 ```
 
 - events テーブル（予定）
+
 ```sql
 CREATE TABLE IF NOT EXISTS events (
   id TEXT PRIMARY KEY,
@@ -150,13 +162,14 @@ CREATE TABLE IF NOT EXISTS events (
 - その他（履歴・ログテーブル等は必要に応じて追加）
 
 注意:
+
 - SQLite は外部キー制約を利用できますが、Expo の SQLite 実装では PRAGMA foreign_keys = ON を明示的にセットして使用する必要があります。実運用では論理的参照のみでコード側で整合性を管理する方が安全な場合もあります。
 - 全テーブルで `created_at`/`updated_at` を持つことで、差分同期やマージが容易になります。
 
 ---
 
 4. インデックスとクエリの指針
-パフォーマンス上、下記インデックスを追加することを推奨します（クエリ頻度に応じて調整）：
+   パフォーマンス上、下記インデックスを追加することを推奨します（クエリ頻度に応じて調整）：
 
 ```sql
 CREATE INDEX IF NOT EXISTS idx_photos_album_id ON photos(album_id);
@@ -168,6 +181,7 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ```
 
 クエリの指針:
+
 - カレンダー表示では `taken_at` / `created_at` を日付で抽出してカウントする。可能なら日付だけを格納する補助列（`taken_date`）を用意して高速検索することを検討する。
 - ラベル検索では `JOIN` を用いて `photos` ↔ `photo_labels` ↔ `labels` の絞り込みを行う。
 - ページネーションは LIMIT/OFFSET ではなく、キー（created_at や id）を用いた cursor-based を推奨（大量データ時に性能が良い）。
@@ -175,6 +189,7 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ---
 
 5. マイグレーション戦略
+
 - schema_version テーブルを用い、起動時に現在のバージョンを読み取り、適用されていないマイグレーション SQL を順次実行する。
 - マイグレーションは破壊的変更を避け、次の流れで行う：
   1. 新しい列を追加（ALTER TABLE ADD COLUMN）
@@ -185,6 +200,7 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ---
 
 6. データアクセスの実装ガイドライン
+
 - `lib/db/sqlite.ts` は以下を提供:
   - DB 初期化（open、PRAGMA 設定、schema_version チェック、マイグレーション実行）
   - 基本的な CRUD ヘルパー（run, all, get）
@@ -194,12 +210,14 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 - 重要: SQL インジェクション対策として必ずプレースホルダ（? or :named）を使用する。
 
 パターン例（擬似コード）
+
 - `db.run('INSERT INTO photos (...) VALUES (?, ?, ...)', [id, uri, ...])`
 - `db.all('SELECT * FROM photos WHERE album_id = ? ORDER BY created_at DESC LIMIT ?', [albumId, pageSize])`
 
 ---
 
 7. 画像ファイルの取り扱い（FileSystem、サムネイル）
+
 - 画像は `expo-file-system` のアプリ専用ディレクトリ（例: `${FileSystem.documentDirectory}photos/`）に保存する。
 - 保存時の命名規則: `<uuid>.<ext>`（拡張子は元ファイルのもの。JPEG/PNG/WebP 等）
 - DB には `file_uri`（file://...）を格納し、画像の取り扱いはファイルシステムで行う。
@@ -210,6 +228,7 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ---
 
 8. 同期（ローカル ⇄ クラウド）設計の概要
+
 - 基本戦略（フェーズ）
   1. ローカルで操作（作成/更新/削除） → `sync_status` を `'pending'` にセット
   2. バックグラウンドジョブ（React Query の mutation / worker）で差分をクラウドに送信
@@ -230,6 +249,7 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ---
 
 9. 衝突解決ポリシー（初期案）
+
 - シンプルな初期戦略: Last Write Wins (LWW) — `updated_at` が新しい方を採用
 - フィールドレベルのより複雑なマージは将来の拡張（例: メモは結合、ラベルは集合和）
 - 衝突検出:
@@ -242,59 +262,65 @@ CREATE INDEX IF NOT EXISTS idx_events_start_at ON events(start_at);
 ---
 
 10. TypeScript インターフェイス例
-（簡易版。プロジェクトで共通の型定義を `lib/db/types.ts` に置くことを推奨）
+    （簡易版。プロジェクトで共通の型定義を `lib/db/types.ts` に置くことを推奨）
 
 ```ts
-export type SyncStatus = 'synced' | 'pending' | 'conflict' | 'failed' | 'deleted';
+export type SyncStatus =
+  | 'synced'
+  | 'pending'
+  | 'conflict'
+  | 'failed'
+  | 'deleted'
 
 export interface BaseModel {
-  id: string;
-  remoteId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string | null;
-  syncStatus: SyncStatus;
+  id: string
+  remoteId?: string | null
+  createdAt: string
+  updatedAt: string
+  deletedAt?: string | null
+  syncStatus: SyncStatus
 }
 
 export interface Album extends BaseModel {
-  name: string;
-  description?: string | null;
+  name: string
+  description?: string | null
 }
 
 export interface Photo extends BaseModel {
-  albumId?: string | null;
-  fileUri: string;
-  thumbnailUri?: string | null;
-  takenAt?: string | null;
-  locationLat?: number | null;
-  locationLng?: number | null;
-  width?: number;
-  height?: number;
-  orientation?: number;
+  albumId?: string | null
+  fileUri: string
+  thumbnailUri?: string | null
+  takenAt?: string | null
+  locationLat?: number | null
+  locationLng?: number | null
+  width?: number
+  height?: number
+  orientation?: number
 }
 
 export interface Label extends BaseModel {
-  name: string;
-  type: 'title' | 'tag';
+  name: string
+  type: 'title' | 'tag'
 }
 
 export interface Note extends BaseModel {
-  photoId: string;
-  body?: string | null;
+  photoId: string
+  body?: string | null
 }
 
 export interface EventModel extends BaseModel {
-  title: string;
-  startAt: string;
-  endAt?: string | null;
-  location?: string | null;
-  memo?: string | null;
+  title: string
+  startAt: string
+  endAt?: string | null
+  location?: string | null
+  memo?: string | null
 }
 ```
 
 ---
 
 11. 運用・テスト注意点
+
 - 単体テスト: DB ラッパー（SQL 実行）とファイル保存ユーティリティをユニットテストでカバーする。SQLite の挙動はモックもしくは実ファイルでのインテグレーションテストを用いる。
 - E2E: 重要なフロー（撮影→保存→一覧表示→同期）を E2E テストで検証（Detox / Maestro を検討）。
 - バックアップ/エクスポート: データエクスポート（JSON + 画像 zip）を用意して、ユーザーが自分のデータを持ち出せるようにする。
@@ -303,6 +329,7 @@ export interface EventModel extends BaseModel {
 ---
 
 12. 次のステップ（短期）
+
 - `lib/db/schema.ts` に上記 SQL を実装して DB 初期化ロジックを作成（Issue: DB schema & initialization）。
 - `lib/db/sqlite.ts` に Promise ベースのラッパーとマイグレーション実行を作る。
 - 画像保存ユーティリティ（`lib/media/storage.ts`）を実装し、サムネイル生成（`expo-image-manipulator` を利用）を組み込む。
@@ -311,6 +338,7 @@ export interface EventModel extends BaseModel {
 ---
 
 補足メモ
+
 - Expo の SQLite は iOS/Android/web で実装差があるため、Web 用は `react-native-web` と `input[type=file]` によるフォールバックを検討してください。
 - 画像のメタ（EXIF）取得は `expo-image-picker` や `expo-media-library` の機能を利用し、保存時に `taken_at` / `location` を埋めると便利です。
 - セキュリティ: 端末内に個人情報（顔写真/位置情報）を保存するため、バックアップ/復元や共有機能を実装する際はアクセス権と削除ポリシーを明確に。

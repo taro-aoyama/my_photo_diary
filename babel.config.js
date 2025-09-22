@@ -1,5 +1,5 @@
 module.exports = function (api) {
-  api.cache(true);
+  api.cache(true)
 
   return {
     // Use the Expo preset which is compatible with React Native & jest-expo environments.
@@ -26,5 +26,5 @@ module.exports = function (api) {
 
     // Keep source maps enabled in dev/test environments
     sourceMaps: api.env() === 'production' ? false : 'inline',
-  };
-};
+  }
+}

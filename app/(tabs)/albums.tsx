@@ -1,13 +1,13 @@
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { StyleSheet } from 'react-native';
+import { ThemedText } from '@/components/themed-text'
+import { ThemedView } from '@/components/themed-view'
+import { StyleSheet } from 'react-native'
 
 export default function AlbumsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title">Albums</ThemedText>
     </ThemedView>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -16,4 +16,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-});
+})

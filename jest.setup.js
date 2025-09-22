@@ -12,15 +12,15 @@
 //
 // Testing library matchers
 //
-require('@testing-library/jest-native/extend-expect');
+require('@testing-library/jest-native/extend-expect')
 
 // Increase default timeout for slower CI environments or device-related mocks
-jest.setTimeout(10000);
+jest.setTimeout(10000)
 
 //
 // Silence the warning: Animated: `useNativeDriver` is not supported
 //
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}));
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}))
 
 //
 // react-native-reanimated (v2+) mock
@@ -28,26 +28,26 @@ jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}));
 // Ensure this is before any imports that might load reanimated.
 jest.mock('react-native-reanimated', () => {
   // eslint-disable-next-line global-require
-  const Reanimated = require('react-native-reanimated/mock');
+  const Reanimated = require('react-native-reanimated/mock')
 
   // Reanimated mock workaround for jest: set up default export and __esModule flag
-  Reanimated.default = Reanimated;
-  Reanimated.__esModule = true;
+  Reanimated.default = Reanimated
+  Reanimated.__esModule = true
 
   // optional: override some methods if tests need specific behavior
-  Reanimated.useSharedValue = (init) => ({ value: init });
-  Reanimated.useAnimatedStyle = (fn) => fn();
-  Reanimated.withTiming = (v) => v;
-  Reanimated.withDelay = (t, v) => v;
+  Reanimated.useSharedValue = (init) => ({ value: init })
+  Reanimated.useAnimatedStyle = (fn) => fn()
+  Reanimated.withTiming = (v) => v
+  Reanimated.withDelay = (t, v) => v
 
-  return Reanimated;
-});
+  return Reanimated
+})
 
 //
 // react-native-gesture-handler minimal mock
 //
 jest.mock('react-native-gesture-handler', () => {
-  const View = require('react-native').View;
+  const View = require('react-native').View
   return {
     // Basic components used in many apps
     Swipeable: View,
@@ -62,8 +62,8 @@ jest.mock('react-native-gesture-handler', () => {
     TapGestureHandler: View,
     FlingGestureHandler: View,
     LongPressGestureHandler: View,
-  };
-});
+  }
+})
 
 //
 // Lightweight mocks for Expo modules used during tests.
@@ -81,29 +81,31 @@ jest.mock('expo-file-system', () => {
     moveAsync: jest.fn(async ({ from, to }) => ({ from, to, uri: to })),
     deleteAsync: jest.fn(async (uri, options) => ({ uri, deleted: true })),
     downloadAsync: jest.fn(async (url, fileUri) => ({ uri: fileUri })),
-  };
-});
+  }
+})
 
 // expo-image-manipulator
 jest.mock('expo-image-manipulator', () => {
   return {
     manipulateAsync: jest.fn(async (uri, actions = [], options = {}) => {
       // Return an object similar to the real API
-      return { uri, width: 100, height: 100, base64: null };
+      return { uri, width: 100, height: 100, base64: null }
     }),
     SaveFormat: { JPEG: 'jpeg', PNG: 'png' },
-  };
-});
+  }
+})
 
 // expo-image-picker
 jest.mock('expo-image-picker', () => {
   return {
     launchImageLibraryAsync: jest.fn(async () => ({ canceled: true })),
     launchCameraAsync: jest.fn(async () => ({ canceled: true })),
-    requestMediaLibraryPermissionsAsync: jest.fn(async () => ({ granted: true })),
+    requestMediaLibraryPermissionsAsync: jest.fn(async () => ({
+      granted: true,
+    })),
     requestCameraPermissionsAsync: jest.fn(async () => ({ granted: true })),
-  };
-});
+  }
+})
 
 // expo-media-library
 jest.mock('expo-media-library', () => {
@@ -111,8 +113,8 @@ jest.mock('expo-media-library', () => {
     requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
     createAssetAsync: jest.fn(async (uri) => ({ id: 'asset-mock-id', uri })),
     getAssetsAsync: jest.fn(async () => ({ assets: [] })),
-  };
-});
+  }
+})
 
 // expo-sqlite: provide a minimal in-memory-like mock that supports transactions and executeSql
 jest.mock('expo-sqlite', () => {
@@ -132,45 +134,48 @@ jest.mock('expo-sqlite', () => {
               },
               insertId: 1,
               rowsAffected: 0,
-            };
-            if (typeof success === 'function') {
-              success(tx, result);
             }
-            return result;
+            if (typeof success === 'function') {
+              success(tx, result)
+            }
+            return result
           },
-        };
+        }
         try {
-          fn(tx);
+          fn(tx)
         } catch (e) {
           // no-op
         }
       },
-    };
-  };
-  return { openDatabase };
-});
+    }
+  }
+  return { openDatabase }
+})
 
 //
 // Mock fetch if code expects global.fetch; jest-expo typically provides it, but ensure fallback
 //
 if (typeof global.fetch === 'undefined') {
-  global.fetch = require('node-fetch');
+  global.fetch = require('node-fetch')
 }
 
 //
 // Optional: helper to flush pending promises in tests
 //
-global.flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+global.flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
 //
 // Provide a small console filter to reduce noise during tests (optional)
 //
-const originalWarn = console.warn.bind(console);
+const originalWarn = console.warn.bind(console)
 console.warn = (...args) => {
   // Filter known noisy RN warning fragments here if desired
-  const msg = String(args[0] || '');
-  if (msg.includes('Setting a timer') || msg.includes('Animated: `useNativeDriver`')) {
-    return;
+  const msg = String(args[0] || '')
+  if (
+    msg.includes('Setting a timer') ||
+    msg.includes('Animated: `useNativeDriver`')
+  ) {
+    return
   }
-  originalWarn(...args);
-};
+  originalWarn(...args)
+}

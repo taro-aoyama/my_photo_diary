@@ -3,23 +3,23 @@
   // These help enforce formatting, linting, TypeScript support, React Native / Expo workflows, and productivity helpers.
   "recommendations": [
     // Formatting / Linting
-    "esbenp.prettier-vscode",        // Prettier — code formatter
-    "dbaeumer.vscode-eslint",        // ESLint integration
+    "esbenp.prettier-vscode", // Prettier — code formatter
+    "dbaeumer.vscode-eslint", // ESLint integration
 
     // Editor / workspace consistency
-    "EditorConfig.EditorConfig",     // EditorConfig support
+    "EditorConfig.EditorConfig", // EditorConfig support
 
     // TypeScript / React support
     "ms-vscode.vscode-typescript-next", // Optional: newer TS features support
-    "dsznajder.es7-react-js-snippets",  // React/ES7 snippets
+    "dsznajder.es7-react-js-snippets", // React/ES7 snippets
 
     // React Native / Expo
-    "vsmobile.vscode-react-native",  // React Native tools
-    "msjsdiag.debugger-for-chrome",  // Debugger for Chrome (useful for web/debugging)
+    "vsmobile.vscode-react-native", // React Native tools
+    "msjsdiag.debugger-for-chrome", // Debugger for Chrome (useful for web/debugging)
 
     // Testing & Git
-    "orta.vscode-jest",              // Jest integration (test runner)
-    "eamodio.gitlens"                // GitLens — git supercharged (history, blame, etc.)
+    "orta.vscode-jest", // Jest integration (test runner)
+    "eamodio.gitlens" // GitLens — git supercharged (history, blame, etc.)
   ],
 
   // Optional: extensions you may want to avoid enabling by default in this workspace.
