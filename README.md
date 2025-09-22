@@ -207,3 +207,10 @@ pnpm start
 	4.	カレンダーと予定テーブルを連携。
 	5.	Web のフォールバック UX を用意。
 	6.	M3 まで達したらバックエンド方式（Supabase vs Rails API）を再評価。
+
+----
+
+Julesへ、
+下記ドキュメントを読んでください
+
+docs/ONBOARDING_JULES.md
