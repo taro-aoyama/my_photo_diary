@@ -222,53 +222,57 @@ export async function saveImage(
 }
 
 /**
+ * Get a stable file URI for a photo file name.
+ */
+export function getUri(fileName: string): string {
+  return `${PHOTOS_DIR}${fileName}`;
+}
+
+/**
  * Delete image files (photo + thumbnail).
  * - photoUri: the primary file URI to delete (file://...)
  * - thumbnailUri: optional thumbnail URI to delete
  *
- * Returns an object describing deletion outcomes.
+ * Throws an error if deletion fails, allowing caller to handle DB transactions.
  */
 export async function deleteImage(
   photoUri: string,
   thumbnailUri?: string | null,
-): Promise<{
-  photoDeleted: boolean;
-  thumbnailDeleted?: boolean;
-}> {
-  let photoDeleted = false;
-  let thumbnailDeleted: boolean | undefined = undefined;
-
+): Promise<void> {
   try {
-    // deleteAsync with idempotent true will not throw if file doesn't exist (expo-file-system v11+).
-    // But to be safe we wrap in try/catch.
-    await FileSystem.deleteAsync(photoUri, { idempotent: true });
-    photoDeleted = true;
+    // Use idempotent: false to ensure an error is thrown if the file does not exist.
+    // This helps catch logic errors where the URI is incorrect or the file was already deleted.
+    await FileSystem.deleteAsync(photoUri, { idempotent: false });
   } catch (err) {
-    // If deletion fails, log and continue
     // eslint-disable-next-line no-console
-    console.warn("Failed to delete photo file:", photoUri, err);
-    photoDeleted = false;
+    console.error(`Failed to delete photo file: ${photoUri}`, err);
+    throw new Error(`Failed to delete photo file: ${photoUri}. ${String(err)}`);
   }
 
   if (thumbnailUri) {
     try {
-      await FileSystem.deleteAsync(thumbnailUri, { idempotent: true });
-      thumbnailDeleted = true;
+      await FileSystem.deleteAsync(thumbnailUri, { idempotent: false });
     } catch (err) {
+      // If the main photo was deleted but the thumbnail fails, the DB state is now inconsistent.
+      // The caller should ideally handle this, but for now, we'll just log it.
+      // A more robust implementation might try to restore the main photo.
       // eslint-disable-next-line no-console
-      console.warn("Failed to delete thumbnail file:", thumbnailUri, err);
-      thumbnailDeleted = false;
+      console.error(
+        `Failed to delete thumbnail file: ${thumbnailUri}. The main photo was deleted.`,
+        err,
+      );
+      throw new Error(
+        `Failed to delete thumbnail file: ${thumbnailUri}. ${String(err)}`,
+      );
     }
   }
-
-  return { photoDeleted, thumbnailDeleted };
 }
 
 /**
  * Generate a thumbnail from an existing file URI and store it in thumbnails directory.
  * This can be used independently of saveImage.
  */
-export async function generateThumbnailFromUri(
+export async function generateThumbnail(
   sourceUri: string,
   options?: { maxSize?: number; quality?: number },
 ): Promise<string> {
@@ -345,6 +349,7 @@ export async function importFileToPhotos(sourceUri: string): Promise<string> {
 export default {
   saveImage,
   deleteImage,
-  generateThumbnailFromUri,
+  getUri,
+  generateThumbnail,
   importFileToPhotos,
 };
