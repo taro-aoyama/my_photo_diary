@@ -39,6 +39,6 @@ jobs:
           CI: true
 
       - name: Run tests
-        run: pnpm test -- --ci --reporters=default
+        run: pnpm test --ci --reporters=default
         env:
           CI: true
