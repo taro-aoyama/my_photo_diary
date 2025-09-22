@@ -27,8 +27,32 @@ function uuidv4(): string {
     return v.toString(16)
   })
 }
-import { initDatabase, run, all, get } from './sqlite'
+import { initDatabase, run, all, get, tableExists } from './sqlite'
 import { saveImage, deleteImage } from '../media/storage'
+
+/**
+ * Verify that all expected tables exist after migration.
+ */
+async function verifySchema() {
+  const requiredTables = [
+    'schema_version',
+    'albums',
+    'photos',
+    'labels',
+    'photo_labels',
+    'notes',
+    'events',
+  ]
+  console.log('Verifying schema...')
+  for (const tableName of requiredTables) {
+    const exists = await tableExists(tableName)
+    if (!exists) {
+      throw new Error(`Verification failed: table '${tableName}' does not exist.`)
+    }
+    console.log(`- Table '${tableName}' exists.`)
+  }
+  console.log('Schema verification successful.')
+}
 
 async function createAlbum(name: string) {
   const id = uuidv4()
@@ -98,9 +122,10 @@ async function listPhotosForAlbum(albumId?: string | null) {
  */
 export async function exampleFlow(sampleSourceUri?: string) {
   try {
-    // 1) Init DB
+    // 1) Init DB and verify schema
     await initDatabase()
     console.log('Database initialized')
+    await verifySchema()
 
     // 2) Create Album
     const albumId = await createAlbum('My Test Album')
