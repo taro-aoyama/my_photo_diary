@@ -60,7 +60,7 @@ module.exports = {
     // This pattern means "don't transform anything in node_modules except for the following packages"
     // It's a common requirement for React Native projects that use ESM.
     // The `.*` before the package names is to account for pnpm's directory structure.
-    'node_modules/(?!.*(jest-expo|react-native|@react-native|@react-navigation/.*|expo|@expo/.*|expo-router|expo-linking|expo-constants|expo-modules-core|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens)/)',
+    'node_modules/(?!.*(jest-expo|react-native|@react-native|@react-navigation/.*|expo|@expo/.*|expo-router|expo-linking|expo-constants|expo-modules-core|react-native-reanimated|react-native-gesture-handler|react-native-safe-area-context|react-native-screens|expo-file-system|expo-image-manipulator)/)',
   ],
 
   // Increase timeout for slower CI environments or heavy tests

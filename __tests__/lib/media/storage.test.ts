@@ -6,47 +6,84 @@ import {
   deleteImage,
   getUri,
   generateThumbnail,
-} from "lib/media/storage";
+} from "@/lib/media/storage";
 
 // Mocking expo-file-system
-jest.mock("expo-file-system");
+jest.mock("expo-file-system", () => ({
+  ...jest.requireActual("expo-file-system"),
+  documentDirectory: "file:///mock-docs/",
+  cacheDirectory: "file:///mock-cache/",
+  getInfoAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  copyAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  moveAsync: jest.fn(),
+}));
 jest.mock("expo-image-manipulator");
 
-const mockFileSystem = FileSystem as jest.Mocked<typeof FileSystem>;
+const TypedFileSystem = FileSystem as unknown as {
+  documentDirectory: string;
+  cacheDirectory: string;
+  getInfoAsync: jest.Mock;
+  makeDirectoryAsync: jest.Mock;
+  copyAsync: jest.Mock;
+  deleteAsync: jest.Mock;
+  moveAsync: jest.Mock;
+};
+
 const mockImageManipulator = ImageManipulator as jest.Mocked<
   typeof ImageManipulator
 >;
 
 describe("lib/media/storage", () => {
-  const PHOTOS_DIR = `${mockFileSystem.documentDirectory}photos/`;
+  const PHOTOS_DIR = `${TypedFileSystem.documentDirectory}photos/`;
 
   beforeEach(() => {
     // Reset mocks before each test
     jest.clearAllMocks();
 
     // Mock getInfoAsync to simulate that directories do not exist initially
-    mockFileSystem.getInfoAsync.mockImplementation(async (uri) => {
-      if (uri === PHOTOS_DIR || uri.startsWith(PHOTOS_DIR)) {
-        return { exists: true, isDirectory: true, uri };
+    TypedFileSystem.getInfoAsync.mockImplementation(async (uri) => {
+      if (
+        uri === PHOTOS_DIR ||
+        uri.startsWith(PHOTOS_DIR) ||
+        uri.startsWith(`${TypedFileSystem.documentDirectory}photos/thumbnails`)
+      ) {
+        return {
+          exists: true,
+          isDirectory: true,
+          uri,
+          size: 1024,
+          modificationTime: 1672531200,
+        };
       }
-      return { exists: false, isDirectory: false, uri };
+      return {
+        exists: false,
+        isDirectory: false,
+        uri,
+        size: undefined,
+        modificationTime: undefined,
+      };
     });
 
     // Mock makeDirectoryAsync
-    mockFileSystem.makeDirectoryAsync.mockResolvedValue(undefined);
+    TypedFileSystem.makeDirectoryAsync.mockResolvedValue(undefined);
 
     // Mock copyAsync
-    mockFileSystem.copyAsync.mockResolvedValue(undefined);
+    TypedFileSystem.copyAsync.mockResolvedValue(undefined);
+
+    // Mock moveAsync
+    TypedFileSystem.moveAsync.mockResolvedValue(undefined);
 
     // Mock deleteAsync
-    mockFileSystem.deleteAsync.mockResolvedValue(undefined);
+    TypedFileSystem.deleteAsync.mockResolvedValue(undefined);
 
     // Mock ImageManipulator
     mockImageManipulator.manipulateAsync.mockResolvedValue({
       uri: "file:///manipulated.jpg",
       width: 200,
       height: 200,
-      base64: null,
+      base64: undefined,
     });
   });
 
@@ -67,18 +104,18 @@ describe("lib/media/storage", () => {
       expect(result.thumbnailUri).toMatch(
         /^file:\/\/\/.*photos\/thumbnails\/.*_thumb\.jpg$/,
       );
-      expect(mockFileSystem.copyAsync).toHaveBeenCalledWith({
+      expect(TypedFileSystem.copyAsync).toHaveBeenCalledWith({
         from: sourceUri,
         to: result.fileUri,
       });
       expect(mockImageManipulator.manipulateAsync).toHaveBeenCalled();
-      expect(mockFileSystem.moveAsync).toHaveBeenCalled();
+      expect(TypedFileSystem.moveAsync).toHaveBeenCalled();
     });
 
     it("should throw an error if file copy/move fails", async () => {
       const sourceUri = "file:///source.jpg";
-      mockFileSystem.copyAsync.mockRejectedValue(new Error("Copy failed"));
-      mockFileSystem.moveAsync.mockRejectedValue(new Error("Move failed"));
+      TypedFileSystem.copyAsync.mockRejectedValue(new Error("Copy failed"));
+      TypedFileSystem.moveAsync.mockRejectedValue(new Error("Move failed"));
 
       await expect(saveImage(sourceUri)).rejects.toThrow(
         "Failed to copy/move image to app storage",
@@ -92,17 +129,17 @@ describe("lib/media/storage", () => {
       const thumbnailUri = "file:///thumb.jpg";
       await deleteImage(photoUri, thumbnailUri);
 
-      expect(mockFileSystem.deleteAsync).toHaveBeenCalledWith(photoUri, {
+      expect(TypedFileSystem.deleteAsync).toHaveBeenCalledWith(photoUri, {
         idempotent: false,
       });
-      expect(mockFileSystem.deleteAsync).toHaveBeenCalledWith(thumbnailUri, {
+      expect(TypedFileSystem.deleteAsync).toHaveBeenCalledWith(thumbnailUri, {
         idempotent: false,
       });
     });
 
     it("should throw an error if photo deletion fails", async () => {
       const photoUri = "file:///photo.jpg";
-      mockFileSystem.deleteAsync.mockRejectedValue(new Error("Delete failed"));
+      TypedFileSystem.deleteAsync.mockRejectedValue(new Error("Delete failed"));
 
       await expect(deleteImage(photoUri)).rejects.toThrow(
         "Failed to delete photo file",
@@ -123,7 +160,7 @@ describe("lib/media/storage", () => {
         [{ resize: { width: 200 } }],
         expect.any(Object),
       );
-      expect(mockFileSystem.moveAsync).toHaveBeenCalled();
+      expect(TypedFileSystem.moveAsync).toHaveBeenCalled();
     });
   });
 });
