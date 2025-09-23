@@ -124,6 +124,16 @@ describe("lib/media/storage", () => {
   });
 
   describe("deleteImage", () => {
+    let consoleErrorSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      consoleErrorSpy.mockRestore();
+    });
+
     it("should delete the photo and thumbnail", async () => {
       const photoUri = "file:///photo.jpg";
       const thumbnailUri = "file:///thumb.jpg";
@@ -144,6 +154,7 @@ describe("lib/media/storage", () => {
       await expect(deleteImage(photoUri)).rejects.toThrow(
         "Failed to delete photo file",
       );
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
   });
 
