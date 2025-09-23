@@ -1,7 +1,6 @@
 import { Camera, CameraType, FlashMode, useCameraPermissions } from "expo-camera";
 import { useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { requestPermission } from "../lib/permissions";
 import { saveImage } from "../lib/media/storage";
 import { router } from "expo-router";
 
