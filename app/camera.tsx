@@ -1,4 +1,4 @@
-import { Camera, CameraType, FlashMode, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions, CameraType, FlashMode } from "expo-camera";
 import { useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Alert } from "react-native";
 import { saveImage } from "../lib/media/storage";
@@ -7,10 +7,10 @@ import { usePhotoStore } from "@/lib/stores/photo-store";
 import { createPhoto } from "@/lib/data/photos";
 
 export default function CameraScreen() {
-  const [type, setType] = useState(CameraType.back);
-  const [flash, setFlash] = useState(FlashMode.off);
+  const [facing, setFacing] = useState<CameraType>('back');
+  const [flash, setFlash] = useState<FlashMode>('off');
   const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef<CameraView>(null);
   const [isTakingPicture, setIsTakingPicture] = useState(false);
   const { addPhoto } = usePhotoStore();
 
@@ -31,16 +31,12 @@ export default function CameraScreen() {
     );
   }
 
-  function toggleCameraType() {
-    setType((current) =>
-      current === CameraType.back ? CameraType.front : CameraType.back
-    );
+  function toggleCameraFacing() {
+    setFacing((current: CameraType) => (current === 'back' ? 'front' : 'back'));
   }
 
   function toggleFlash() {
-    setFlash((current) =>
-      current === FlashMode.off ? FlashMode.on : FlashMode.off
-    );
+    setFlash((current: FlashMode) => (current === 'off' ? 'on' : 'off'));
   }
 
   async function takePicture() {
@@ -73,9 +69,9 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <Camera style={styles.camera} type={type} flashMode={flash} ref={cameraRef}>
+      <CameraView style={styles.camera} facing={facing} flash={flash} ref={cameraRef}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraType} disabled={isTakingPicture}>
+          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing} disabled={isTakingPicture}>
             <Text style={styles.text}>Flip</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={toggleFlash} disabled={isTakingPicture}>
@@ -85,7 +81,7 @@ export default function CameraScreen() {
             {isTakingPicture ? <ActivityIndicator size="small" color="white" /> : <Text style={styles.text}>Take</Text>}
           </TouchableOpacity>
         </View>
-      </Camera>
+      </CameraView>
     </View>
   );
 }
